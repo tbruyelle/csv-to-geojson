@@ -12,15 +12,12 @@ App.prototype.init = function() {
 	$("#convertButton").click($.proxy(function(evt) {
 		var csvObject = CSVToArray($("#csvTextArea").val());
 		var util = new Util();
+        var latName = $("#latitudeCol").val()
+        var longName = $("#longitudeCol").val()
 
-		var latName = util.getColName(csvObject, ['lat', 'Lat', 'LAT', 'latitude', 'Latitude', 'LATITUDE']);
-		var lonName = util.getColName(csvObject, ['lng', 'Lng', 'LNG', 'lon', 'Lon', 'LON', 'longitude', 'Longitude', 'LONGITUDE']);
-		console.log("latName:", latName);
-		console.log("lonName:", lonName);
-
-		var massagedData = util.massageData(csvObject);
+		var massagedData = util.massageData(csvObject, latName, longName);
 		GeoJSON.parse(massagedData, {
-			Point: [latName, lonName]
+			Point: [latName, longName]
 		}, function(geojson) {
 			$("#resultTextArea").show();
 			
@@ -57,7 +54,7 @@ App.prototype.init = function() {
 
 var Util = makeClass();
 
-Util.prototype.massageData = function(data) {
+Util.prototype.massageData = function(data, latName, longName) {
 	if (data && data.length > 2) {
 		var returnData = [];
 		var dataNoHeader = $.extend(true, [], data);
@@ -65,6 +62,10 @@ Util.prototype.massageData = function(data) {
 		dataNoHeader.forEach(function(item) {
 			var returnItem = {}, i = 0;
 			data[0].forEach(function(columnName) {
+                if (columnName == latName || columnName == longName) {
+                    item[i] = item[i].replace(',','.');
+                    console.log(columnName+"="+item[i]);
+                }
 				returnItem[columnName] = item[i];
 				i++;
 			}, this);
